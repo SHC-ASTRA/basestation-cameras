@@ -1,6 +1,6 @@
-# Basestation Cameras (Qt6 + GStreamer)
+# Basestation Cameras
 
-Multi-RTSP grid viewer using Qt6 and GStreamer, controlled via IPC (Unix domain socket).
+Multi-RTSP grid viewer using Qt6 and GStreamer, controlled via IPC
 
 ## Dev shell
 
@@ -18,12 +18,12 @@ cmake --build build -j
 ## Run
 
 ```
-./build/basestation-cameras
+nix run
 ```
 
 ## IPC protocol
 
-- Socket path: `/tmp/basestation-cameras-ipc` (QLocalServer)
+- Socket path: `/tmp/basestation-cameras-ipc`
 - Transport: newline-delimited JSON commands
 - Format:
 
@@ -36,11 +36,8 @@ cmake --build build -j
 ### Send command example
 
 ```
-printf '%s\n' '{"cmd":"grid","payload":{"rows":2,"cols":2}}' | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+printf '{"cmd":"add_stream","payload":{"id":%s,"url":%s}}\n' $id $url | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+printf '{"cmd":"remove_stream","payload":{"id":%s}}\n' $id | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+printf '{"cmd":"grid","payload":{"rows":%s,"cols":%s}}\n' $rows $cols | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
 ```
-
-### Notes
-
-- The first frame decode can take a moment depending on RTSP server.
-- To reduce latency, consider switching to `rtspsrc ! rtph264depay ! avdec_h264 ! videoconvert ! appsink` with appropriate properties; current pipeline uses `uridecodebin` for simplicity.
 
