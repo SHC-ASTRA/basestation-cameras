@@ -11,8 +11,7 @@ nix develop
 ## Build
 
 ```
-cmake -S . -B build -G Ninja
-cmake --build build -j
+nix build
 ```
 
 ## Run

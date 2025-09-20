@@ -80,17 +80,43 @@ void RtspStream::start() {
         GstElement *depay = nullptr;
         GstElement *parse = nullptr;
         GstElement *dec = nullptr;
+        GstElement *postproc = nullptr; // VAAPI postproc if used
+        GstElement *sysmemCaps = nullptr; // capsfilter to force system memory
+        bool useVaapi = false;
         if (isH265) {
             depay = gst_element_factory_make("rtph265depay", nullptr);
             parse = gst_element_factory_make("h265parse", nullptr);
-            dec = gst_element_factory_make("avdec_h265", nullptr);
+            // Prefer VAAPI on AMD with fallback to software
+            dec = gst_element_factory_make("vah265dec", nullptr);
+            if (dec) useVaapi = true;
+            if (!dec) { dec = gst_element_factory_make("vaapih265dec", nullptr); useVaapi = (dec != nullptr); }
+            if (!dec) dec = gst_element_factory_make("avdec_h265", nullptr);
         } else if (isH264) {
             depay = gst_element_factory_make("rtph264depay", nullptr);
             parse = gst_element_factory_make("h264parse", nullptr);
-            dec = gst_element_factory_make("avdec_h264", nullptr);
+            // Prefer VAAPI on AMD with fallback to software
+            dec = gst_element_factory_make("vah264dec", nullptr);
+            if (dec) useVaapi = true;
+            if (!dec) { dec = gst_element_factory_make("vaapih264dec", nullptr); useVaapi = (dec != nullptr); }
+            if (!dec) dec = gst_element_factory_make("avdec_h264", nullptr);
         } else {
             emit self->stateChanged(self->id, "Unsupported RTP encoding");
             return;
+        }
+
+        // Attempt to use VAAPI post-processing when decoder is VAAPI
+        if (useVaapi) {
+            postproc = gst_element_factory_make("vapostproc", nullptr);
+            if (!postproc) postproc = gst_element_factory_make("vaapipostproc", nullptr);
+            if (postproc) {
+                // Force download to system memory for downstream CPU-based convert/appsink
+                sysmemCaps = gst_element_factory_make("capsfilter", nullptr);
+                if (sysmemCaps) {
+                    GstCaps *rawCaps = gst_caps_from_string("video/x-raw");
+                    g_object_set(G_OBJECT(sysmemCaps), "caps", rawCaps, NULL);
+                    gst_caps_unref(rawCaps);
+                }
+            }
         }
 
         if (!depay || !parse || !dec) {
@@ -101,8 +127,26 @@ void RtspStream::start() {
             return;
         }
 
-        gst_bin_add_many(GST_BIN(self->pipeline), depay, parse, dec, NULL);
-        if (!gst_element_link_many(depay, parse, dec, self->queue, NULL)) {
+        if (postproc) {
+            if (sysmemCaps) {
+                gst_bin_add_many(GST_BIN(self->pipeline), depay, parse, dec, postproc, sysmemCaps, NULL);
+            } else {
+                gst_bin_add_many(GST_BIN(self->pipeline), depay, parse, dec, postproc, NULL);
+            }
+        } else {
+            gst_bin_add_many(GST_BIN(self->pipeline), depay, parse, dec, NULL);
+        }
+        if (postproc) {
+            if (sysmemCaps) {
+                if (!gst_element_link_many(depay, parse, dec, postproc, sysmemCaps, self->queue, NULL)) {
+                    emit self->stateChanged(self->id, "Failed to link VAAPI pipeline (caps)");
+                    return;
+                }
+            } else if (!gst_element_link_many(depay, parse, dec, postproc, self->queue, NULL)) {
+                emit self->stateChanged(self->id, "Failed to link VAAPI pipeline");
+                return;
+            }
+        } else if (!gst_element_link_many(depay, parse, dec, self->queue, NULL)) {
             emit self->stateChanged(self->id, "Failed to link depay/parse/dec/queue");
             return;
         }
@@ -119,6 +163,8 @@ void RtspStream::start() {
         gst_element_sync_state_with_parent(depay);
         gst_element_sync_state_with_parent(parse);
         gst_element_sync_state_with_parent(dec);
+        if (postproc) gst_element_sync_state_with_parent(postproc);
+        if (sysmemCaps) gst_element_sync_state_with_parent(sysmemCaps);
     }), this);
 
     // Static link: queue ! videoconvert ! appsink

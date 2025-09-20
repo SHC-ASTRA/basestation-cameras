@@ -17,7 +17,17 @@ MainWindow::MainWindow(QWidget *parent)
     centralContainer->setLayout(gridLayout);
     setCentralWidget(centralContainer);
 
-    statusBar()->showMessage("Ready");
+    // Remove outer margins and set 1px spacing between tiles
+    gridLayout->setContentsMargins(0, 0, 0, 0);
+    gridLayout->setSpacing(1);
+    centralContainer->setContentsMargins(0, 0, 0, 0);
+    setContentsMargins(0, 0, 0, 0);
+
+    // Hide status bar by default; show only when there is an active message
+    statusBar()->setVisible(false);
+    connect(statusBar(), &QStatusBar::messageChanged, this, [this](const QString &text) {
+        statusBar()->setVisible(!text.isEmpty());
+    });
 
     ipcServer = std::make_unique<IpcServer>(this);
     connect(ipcServer.get(), &IpcServer::receivedCommand,

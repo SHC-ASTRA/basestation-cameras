@@ -17,6 +17,7 @@
           gst-plugins-bad
           gst-plugins-ugly
           gst-libav
+          gst-vaapi
         ];
         gstPluginPath = pkgs.lib.makeSearchPathOutput "lib" "lib/gstreamer-1.0"
           (gstPlugins ++ [ gst.gstreamer ]);
@@ -45,6 +46,8 @@
               --set QT_STYLE_OVERRIDE Fusion \
               --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "${gstPluginPath}" \
               --prefix GST_PLUGIN_PATH_1_0 : "${gstPluginPath}" \
+              --set LIBVA_DRIVER_NAME radeonsi \
+              --prefix LIBVA_DRIVERS_PATH : ${pkgs.mesa.drivers}/lib/dri \
               --set GIO_MODULE_DIR ${pkgs.glib.bin}/lib/gio/modules \
               --prefix LD_LIBRARY_PATH : ${
                 pkgs.lib.makeLibraryPath [
@@ -54,6 +57,7 @@
                   pkgs.xorg.libXext
                   pkgs.xorg.libXrender
                   pkgs.xorg.libxcb
+                  pkgs.libva
                 ]
               }
           '';
@@ -91,6 +95,7 @@
               gst-plugins-bad
               gst-plugins-ugly
               gst-libav
+              gst-vaapi
             ]);
 
           shellHook = ''
@@ -100,6 +105,8 @@
             export GST_PLUGIN_SYSTEM_PATH_1_0="${gstPluginPath}"
             export GST_PLUGIN_PATH_1_0="${gstPluginPath}"
             export GIO_MODULE_DIR="${pkgs.glib.bin}/lib/gio/modules"
+            export LIBVA_DRIVER_NAME=radeonsi
+            export LIBVA_DRIVERS_PATH=${pkgs.mesa.drivers}/lib/dri
           '';
         };
       });
