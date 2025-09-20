@@ -8,6 +8,7 @@ VideoFrameWidget::VideoFrameWidget(QWidget *parent)
     : QWidget(parent) {
     setMinimumSize(160, 90);
     setAutoFillBackground(true);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 QSize VideoFrameWidget::sizeHint() const {

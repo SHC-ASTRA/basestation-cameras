@@ -44,4 +44,19 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
+# Desktop integration (generate .desktop at build time to ensure availability)
+set(APP_DESKTOP_FILE "${CMAKE_CURRENT_BINARY_DIR}/basestation-cameras.desktop")
+file(WRITE "${APP_DESKTOP_FILE}" "[Desktop Entry]\n"
+  "Type=Application\n"
+  "Name=Basestation Cameras\n"
+  "GenericName=RTSP Grid Viewer\n"
+  "Comment=View multiple RTSP streams in a tiled grid\n"
+  "Exec=basestation-cameras\n"
+  "Icon=basestation-cameras\n"
+  "Terminal=false\n"
+  "Categories=AudioVideo;Video;Viewer;\n"
+  "StartupWMClass=basestation-cameras\n"
+  "X-GNOME-UsesNotifications=false\n")
+install(FILES "${APP_DESKTOP_FILE}" DESTINATION share/applications)
+
 

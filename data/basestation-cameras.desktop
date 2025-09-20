@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Basestation Cameras
+GenericName=RTSP Grid Viewer
+Comment=View multiple RTSP streams in a tiled grid
+Exec=basestation-cameras
+Icon=basestation-cameras
+Terminal=false
+Categories=AudioVideo;Video;Viewer;
+StartupWMClass=basestation-cameras
+X-GNOME-UsesNotifications=false

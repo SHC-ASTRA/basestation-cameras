@@ -14,6 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
       gridLayout(new QGridLayout()),
       gridRows(2),
       gridCols(2) {
+    setWindowFlag(Qt::Window, true);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     centralContainer->setLayout(gridLayout);
     setCentralWidget(centralContainer);
 

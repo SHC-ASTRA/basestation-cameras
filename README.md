@@ -20,6 +20,31 @@ nix build
 nix run
 ```
 
+## Install as a desktop application on NixOS
+
+Add to your `flake.nix` inputs and `environment.systemPackages`:
+
+```nix
+{
+  inputs.basestation-cameras.url = "path:/path/to/basestation-cameras"; # or git URL
+
+  outputs = { self, nixpkgs, basestation-cameras, ... }@inputs: {
+    nixosConfigurations.your-host = nixpkgs.lib.nixosSystem {
+      # ...
+      modules = [
+        ({ pkgs, ... }: {
+          environment.systemPackages = [
+            basestation-cameras.packages.${pkgs.system}.default
+          ];
+        })
+      ];
+    };
+  };
+}
+```
+
+Rebuild your system, then search for "Basestation Cameras" in your app launcher.
+
 ## IPC protocol
 
 - Socket path: `/tmp/basestation-cameras-ipc`

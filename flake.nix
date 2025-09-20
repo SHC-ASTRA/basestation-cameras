@@ -35,14 +35,15 @@
           ];
 
           buildInputs = with pkgs;
-            [ qt6.qtbase qt6.qttools qt6.qtnetworkauth gst.gstreamer libunwind ]
+            [ qt6.qtbase qt6.qttools qt6.qtnetworkauth qt6.qtwayland gst.gstreamer libunwind ]
             ++ gstPlugins;
 
           cmakeFlags = [ "-G" "Ninja" ];
 
           postFixup = ''
             wrapQtApp $out/bin/basestation-cameras \
-              --set QT_QPA_PLATFORM xcb \
+              --set QT_QPA_PLATFORM wayland \
+              --set QT_WAYLAND_DISABLE_WINDOWDECORATION 1 \
               --set QT_STYLE_OVERRIDE Fusion \
               --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "${gstPluginPath}" \
               --prefix GST_PLUGIN_PATH_1_0 : "${gstPluginPath}" \
@@ -107,6 +108,7 @@
             export GIO_MODULE_DIR="${pkgs.glib.bin}/lib/gio/modules"
             export LIBVA_DRIVER_NAME=radeonsi
             export LIBVA_DRIVERS_PATH=${pkgs.mesa.drivers}/lib/dri
+            export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
           '';
         };
       });

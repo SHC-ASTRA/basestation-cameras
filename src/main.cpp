@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
     QApplication::setApplicationName("Basestation Cameras");
+    QApplication::setDesktopFileName("basestation-cameras");
     QApplication::setOrganizationName("astra");
 
     MainWindow w;
