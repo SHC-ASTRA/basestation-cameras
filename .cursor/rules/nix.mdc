@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+ALWAYS manage dependencies with a nix dev shell.
