@@ -40,6 +40,8 @@
             ninja
             pkg-config
             qt6.wrapQtAppsHook
+            netcat-gnu
+            parallel
           ];
 
           buildInputs =
@@ -51,8 +53,6 @@
               qt6.qtwayland
               gst.gstreamer
               libunwind
-              netcat-gnu
-              parallel
             ]
             ++ gstPlugins;
 
