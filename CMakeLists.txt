@@ -59,7 +59,3 @@ file(WRITE "${APP_DESKTOP_FILE}" "[Desktop Entry]\n"
   "X-GNOME-UsesNotifications=false\n")
 install(FILES "${APP_DESKTOP_FILE}" DESTINATION share/applications)
 
-# Add launch script as well
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/scripts/cameracli DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/scripts/launch-cameras DESTINATION bin)
-
