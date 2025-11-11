@@ -100,7 +100,6 @@
             ]);
 
           shellHook = ''
-            echo "[devShell] Qt6 + GStreamer environment ready"
             export QT_LOGGING_RULES="*.debug=false;qt.qpa.*=false"
             export GST_DEBUG=1
             export GST_PLUGIN_SYSTEM_PATH_1_0="${gstPluginPath}"
