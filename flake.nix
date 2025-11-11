@@ -6,8 +6,14 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs { inherit system; };
         gst = pkgs.gst_all_1;
@@ -19,9 +25,11 @@
           gst-libav
           gst-vaapi
         ];
-        gstPluginPath = pkgs.lib.makeSearchPathOutput "lib" "lib/gstreamer-1.0"
-          (gstPlugins ++ [ gst.gstreamer ]);
-      in {
+        gstPluginPath = pkgs.lib.makeSearchPathOutput "lib" "lib/gstreamer-1.0" (
+          gstPlugins ++ [ gst.gstreamer ]
+        );
+      in
+      {
         packages.default = pkgs.stdenv.mkDerivation {
           pname = "basestation-cameras";
           version = "0.1.0";
@@ -34,11 +42,24 @@
             qt6.wrapQtAppsHook
           ];
 
-          buildInputs = with pkgs;
-            [ qt6.qtbase qt6.qttools qt6.qtnetworkauth qt6.qtwayland gst.gstreamer libunwind ]
+          buildInputs =
+            with pkgs;
+            [
+              qt6.qtbase
+              qt6.qttools
+              qt6.qtnetworkauth
+              qt6.qtwayland
+              gst.gstreamer
+              libunwind
+              netcat-gnu
+              parallel
+            ]
             ++ gstPlugins;
 
-          cmakeFlags = [ "-G" "Ninja" ];
+          cmakeFlags = [
+            "-G"
+            "Ninja"
+          ];
 
           postFixup = ''
             wrapQtApp $out/bin/basestation-cameras \
@@ -66,29 +87,33 @@
 
         apps.default = {
           type = "app";
-          program =
-            "${self.packages.${system}.default}/bin/basestation-cameras";
+          program = "${self.packages.${system}.default}/bin/basestation-cameras";
         };
 
         devShells.default = pkgs.mkShell {
           name = "basestation-cameras-dev";
-          buildInputs = with pkgs;
+          buildInputs =
+            with pkgs;
             [
               cmake
               ninja
               pkg-config
               gcc
               gdb
+              netcat-gnu
+              parallel
 
               # Useful tools
               ffmpeg
               libunwind
-            ] ++ (with qt6; [
+            ]
+            ++ (with qt6; [
               # Qt6
               qtbase
               qttools
               qtnetworkauth
-            ]) ++ (with gst; [
+            ])
+            ++ (with gst; [
               # GStreamer + plugins
               gstreamer
               gst-plugins-base
@@ -110,6 +135,6 @@
             export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
           '';
         };
-      });
+      }
+    );
 }
-
