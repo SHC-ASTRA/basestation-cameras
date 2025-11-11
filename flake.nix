@@ -91,13 +91,6 @@
             # path to your script in the repo (adjust if it's elsewhere)
             src = ./.;
 
-            # runtime deps you want available when the script runs
-            buildInputs = with pkgs; [
-              parallel
-              netcat-gnu
-              bash
-            ];
-
             # install the script into $out/bin
             installPhase = ''
               mkdir -p $out/bin
@@ -127,12 +120,6 @@
             pname = "launch-cameras ";
             version = "0.1.0";
             src = ./.;
-
-            # launch-cameras depends on cameracli, so add it to buildInputs
-            buildInputs = with pkgs; [
-              self.packages.${system}.cameracli
-              bash
-            ];
 
             # Install launch-cameras into $out/bin
             installPhase = ''
