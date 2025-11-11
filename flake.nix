@@ -177,6 +177,8 @@
               # Useful tools
               ffmpeg
               libunwind
+	      nixfmt-rfc-style
+	      shfmt
             ]
             ++ (with qt6; [
               # Qt6
