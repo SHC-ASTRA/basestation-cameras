@@ -103,16 +103,17 @@
             # set PATH to include the binaries from buildInputs
             postInstall = ''
               wrapProgram $out/bin/cameracli \
-                --set PATH "${
+                --set PATH ${
                   pkgs.lib.makeBinPath (
                     with pkgs;
                     [
                       parallel
                       netcat-gnu
+		      socat
                       bash
                     ]
                   )
-                }:$PATH"
+                }
             '';
           };
 
@@ -131,7 +132,7 @@
             # Wrap the script to include cameracli in PATH at runtime
             postInstall = ''
               wrapProgram $out/bin/launch-cameras \
-                --set PATH "${
+                --set PATH ${
                   pkgs.lib.makeBinPath (
                     with pkgs;
                     [
@@ -139,7 +140,7 @@
                       bash
                     ]
                   )
-                }:$PATH"
+                }
             '';
           };
         };
@@ -177,8 +178,8 @@
               # Useful tools
               ffmpeg
               libunwind
-	      nixfmt-rfc-style
-	      shfmt
+              nixfmt-rfc-style
+              shfmt
             ]
             ++ (with qt6; [
               # Qt6
