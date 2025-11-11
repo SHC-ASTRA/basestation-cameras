@@ -144,7 +144,15 @@
             # Wrap the script to include cameracli in PATH at runtime
             postInstall = ''
               wrapProgram $out/bin/launch-cameras \
-                --set PATH "${self.packages.${system}.cameracli}/bin:$PATH"
+                --set PATH "${
+                  pkgs.lib.makeBinPath (
+                    with pkgs;
+                    [
+                      self.packages.${system}.cameracli
+                      bash
+                    ]
+                  )
+                }:$PATH"
             '';
           };
         };
