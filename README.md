@@ -60,8 +60,8 @@ Rebuild your system, then search for "Basestation Cameras" in your app launcher.
 ### Send command example
 
 ```
-printf '{"cmd":"add_stream","payload":{"id":%s,"url":%s}}\n' $id $url | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
-printf '{"cmd":"remove_stream","payload":{"id":%s}}\n' $id | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+printf '{"cmd":"add_stream","payload":{"id":"%s","url":"%s"}}\n' $id $url | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+printf '{"cmd":"remove_stream","payload":{"id":"%s"}}\n' $id | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
 printf '{"cmd":"grid","payload":{"rows":%s,"cols":%s}}\n' $rows $cols | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
 ```
 

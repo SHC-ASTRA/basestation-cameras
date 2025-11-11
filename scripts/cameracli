@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+set -e
+
+function main {
+	case $1 in
+	grid)
+		set_grid $2 $3
+		;;
+
+	launch)
+		launch_cameras ${@:2}
+		;;
+
+	*)
+		show_help
+		;;
+	esac
+}
+
+function ensure_socket {
+	if [[ -S /tmp/basestation-cameras-ipc ]]; then
+		return 0
+	fi
+
+	echo "Socket does not exist! Did you run the Basestation Cameras app?"
+	exit 1
+}
+
+function show_help {
+	echo "Basestation Cameras Cli Usage"
+	echo "- cameracli"
+	echo "    show this page"
+	echo "- cameracli grid <rows> <columns>"
+	echo "    change the size of the grid"
+	echo "- cameracli launch [ids...]"
+	echo "    launch cameras with corresponding ids"
+	echo "    if no ids are listed, opens all available"
+	return 1
+}
+
+function set_grid {
+	ensure_socket
+
+	rows=$1
+	cols=$2
+
+	if [[ -z $rows ]] || [[ -z $cols ]]; then
+		show_help
+	fi
+
+	printf '{"cmd":"grid","payload":{"rows":%s,"cols":%s}}\n' $rows $cols | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+
+	echo "Set grid to ${rows}x${cols}"
+	return 0
+}
+
+function launch_cameras {
+	ensure_socket
+
+	if [ "$#" -lt 1 ]; then
+		find_cameras
+	else
+		ids=()
+		for id in "$@"; do
+			ids+=("$id")
+		done
+	fi
+
+	echo "Launching cameras: ${ids[@]}"
+
+	for num in ${ids[@]}; do
+		url="rtsp://192.168.1.${num}/user=admin&password=&channel=1&stream=0.sdp?"
+		id="cam-${num}"
+		payload=$(printf '{"cmd":"add_stream","payload":{"id":"%s","url":"%s"}}\n' $id $url)
+		echo $payload | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+	done
+
+	echo "Press enter to close cameras"
+	read
+	cleanup
+}
+
+function find_cameras {
+	local hosts=($(seq 10 20))
+	mapfile -t ids < <(
+		printf "%s\n" "${hosts[@]}" |
+			parallel -j 32 --no-notice --halt soon,fail=1 \
+				"nc -z -w1 192.168.1.{} 554 >/dev/null 2>&1 && echo {} || true"
+	)
+}
+
+function cleanup {
+	for id in ${ids[@]}; do
+		payload=$(printf '{"cmd":"remove_stream","payload":{"id":"cam-%s"}}\n' $id)
+		echo $payload | socat - UNIX-CONNECT:/tmp/basestation-cameras-ipc
+	done
+}
+
+main $@
