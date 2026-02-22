@@ -41,6 +41,7 @@
               ninja
               pkg-config
               qt6.wrapQtAppsHook
+	      makeWrapper
             ];
 
             buildInputs =
@@ -92,28 +93,12 @@
             src = ./.;
 
             # install the script into $out/bin
-            installPhase = ''
+            installPhase = let
+	      p = pkgs.writeShellScriptBin "cameracli" (import ./scripts/cameracli.nix { inherit pkgs; });
+	    in ''
               mkdir -p $out/bin
-              # copy script from repo; adjust path if needed
-              cp -a ${./scripts/cameracli} $out/bin/cameracli
+              cp ${p}/bin/cameracli $out/bin/cameracli
               chmod +x $out/bin/cameracli
-            '';
-
-            # wrap the installed script so PATH includes the required tools at runtime
-            # set PATH to include the binaries from buildInputs
-            postInstall = ''
-              wrapProgram $out/bin/cameracli \
-                --set PATH ${
-                  pkgs.lib.makeBinPath (
-                    with pkgs;
-                    [
-                      parallel
-                      netcat-gnu
-		      socat
-                      bash
-                    ]
-                  )
-                }
             '';
           };
 
