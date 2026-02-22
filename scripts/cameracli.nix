@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   socat = "${pkgs.socat}/bin/socat";
-  parallel = "${pkgs.socat}/bin/socat";
+  parallel = "${pkgs.parallel}/bin/parallel";
 in ''
 #!${pkgs.bash}/bin/bash
 set -e
