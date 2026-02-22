@@ -13,7 +13,7 @@ function main {
 		;;
 
 	launch)
-		launch_cameras $\{@:2}
+		launch_cameras ''${@:2}
 		;;
 
 	*)
@@ -55,7 +55,7 @@ function set_grid {
 
 	printf '{"cmd":"grid","payload":{"rows":%s,"cols":%s}}\n' $rows $cols | ${socat} - UNIX-CONNECT:/tmp/basestation-cameras-ipc
 
-	echo "Set grid to $\{rows}x$\{cols}"
+	echo "Set grid to ''${rows}x$\{cols}"
 	return 0
 }
 
@@ -71,11 +71,11 @@ function launch_cameras {
 		done
 	fi
 
-	echo "Launching cameras: $\{ids[@]}"
+	echo "Launching cameras: ''${ids[@]}"
 
-	for num in $\{ids[@]}; do
-		url="rtsp://192.168.1.$\{num}/user=admin&password=&channel=1&stream=0.sdp?"
-		id="cam-$\{num}"
+	for num in ''${ids[@]}; do
+		url="rtsp://192.168.1.''${num}/user=admin&password=&channel=1&stream=0.sdp?"
+		id="cam-''${num}"
 		payload=$(printf '{"cmd":"add_stream","payload":{"id":"%s","url":"%s"}}\n' $id $url)
 		echo $payload | ${socat} - UNIX-CONNECT:/tmp/basestation-cameras-ipc
 	done
@@ -88,14 +88,14 @@ function launch_cameras {
 function find_cameras {
 	local hosts=($(seq 10 20))
 	mapfile -t ids < <(
-		printf "%s\n" "$\{hosts[@]}" |
+		printf "%s\n" "''${hosts[@]}" |
 			${parallel} -j 32 --no-notice --halt soon,fail=1 \
 				"nc -z -w1 192.168.1.{} 554 >/dev/null 2>&1 && echo {} || true"
 	)
 }
 
 function cleanup {
-	for id in $\{ids[@]}; do
+	for id in ''${ids[@]}; do
 		payload=$(printf '{"cmd":"remove_stream","payload":{"id":"cam-%s"}}\n' $id)
 		echo $payload | ${socat} - UNIX-CONNECT:/tmp/basestation-cameras-ipc
 	done
