@@ -16,6 +16,14 @@ function main {
 		launch_cameras ''${@:2}
 		;;
 
+        list)
+		find_cameras
+		echo "Found the following cameras:"
+		for id in "''${ids[@]}"; do
+			echo "- 192.168.1.''${id}"
+		done
+		;;
+
 	*)
 		show_help
 		;;
@@ -40,6 +48,8 @@ function show_help {
 	echo "- cameracli launch [ids...]"
 	echo "    launch cameras with corresponding ids"
 	echo "    if no ids are listed, opens all available"
+	echo "- cameracli list"
+	echo "    find available cameras"
 	return 1
 }
 
